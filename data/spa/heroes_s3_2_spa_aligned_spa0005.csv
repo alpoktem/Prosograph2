@@ -1,0 +1,4 @@
+word|speaker_id|id|start_time|end_time|duration|pause_before|pause_after|pos|punctuation_before|punctuation_after|f0_mean_hz|i0_mean_db|f0_mean|i0_mean
+soy|Jesse|heroes_s3_2_spa_aligned.segment5.word1|0.0|0.2|0.2|0.32|0.11|NA|¡||301.0|68.0|-1.0123|0.7182
+peter|Jesse|heroes_s3_2_spa_aligned.segment5.word2|0.31|0.59|0.28|0.11|0.0|NA|||346.0|68.0|1.3998|0.7182
+petrelli|Jesse|heroes_s3_2_spa_aligned.segment5.word3|0.59|1.52|0.93|0.0|0.58|NA||!|338.0|69.0|0.9948|0.9709

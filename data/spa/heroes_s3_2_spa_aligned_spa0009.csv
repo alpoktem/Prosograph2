@@ -1,0 +1,6 @@
+word|speaker_id|id|start_time|end_time|duration|pause_before|pause_after|pos|punctuation_before|punctuation_after|f0_mean_hz|i0_mean_db|f0_mean|i0_mean
+es|Maya|heroes_s3_2_spa_aligned.segment9.word1|0.0|0.25|0.25|3.06|0.0|NA|||230.0|65.0|-1.2703|1.4328
+malo|Maya|heroes_s3_2_spa_aligned.segment9.word2|0.25|0.45|0.2|0.0|0.16|NA|||214.0|67.0|-2.5186|1.9574
+y|Maya|heroes_s3_2_spa_aligned.segment9.word3|0.61|0.72|0.11|0.16|0.0|NA|||200.0|64.0|-3.69|1.1644
+debería|Maya|heroes_s3_2_spa_aligned.segment9.word4|0.72|1.14|0.42|0.0|0.0|NA|||221.0|65.0|-1.9614|1.4328
+destruirlo|Maya|heroes_s3_2_spa_aligned.segment9.word5|1.14|1.7|0.56|0.0|1.14|NA||.|204.0|65.0|-3.3471|1.4328

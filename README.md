@@ -1,10 +1,8 @@
-# Prosograph
+# Prosograph2
 
-Prosograph helps visualize acoustic and prosodic information of long speech segments together with their transcript. Its interactive interface makes it easy to listen to any portion of the displayed speech to accommodate auditory analysis.
+Prosograph2 is an extension on [Prosograph](https://github.com/alpoktem/Prosograph) for viewing bilingual speech corpora. Aligned samples are displayed side by side to accommodate e.g. prosodic comparison. The tool also reads prosodically annotated speech data from Proscript format files.
 
-<p align="center"><img src="https://raw.githubusercontent.com/alpoktem/Prosograph/master/img/batchfrom-0.png"></p>
-
-More information on Prosograph can be found in [our publication](http://hdl.handle.net/10230/32719).
+<p align="center"><img src="https://raw.githubusercontent.com/alpoktem/Prosograph/master/img/prosograph2_dump.png"></p>
 
 ## Run
 
@@ -16,12 +14,12 @@ Prosograph is written in [Python mode of Processing](http://py.processing.org/).
 
 ## Data
 
-Prosograph reads Proscript files. Two sample datasets are provided in `data` directory. 
+Prosograph reads Proscript files. Sample dataset is provided in `data` directory. 
 
 Data specific configurations are set in `dataconfig_<dataset>.py`. Inside this script you need to define `DATASET` as the path to your proscript file or the directory containing your proscript files. You also need to specify the keys used in your proscript files. The configuration file needs to be imported in main `.pyde` file on line:
 
 ```
-import dataconfig_ted as dataconfig   #Specify here which dataconfig you want to use
+import dataconfig_heroes as dataconfig   #Specify here which dataconfig you want to use
 ```
 
 To view sample datasets, make sure you change `DATASET` to the exact directory where the dataset resides.
@@ -46,10 +44,7 @@ For playback, audio file needs to be in the same directory and with same name as
 
 ## Proscript format corpora
 
-Samples in this repository are taken from the following corpora:
-
-- [PANTED corpus](http://hdl.handle.net/10230/33981) - 250 hour speech corpus from TED talks
-- [Heroes corpus](http://hdl.handle.net/10230/35572) - Parallel English-Spanish speech corpus of dubbed movie segments
+Sample data in this repository is taken from [Heroes corpus](http://hdl.handle.net/10230/35572)
 
 To create your own proscript files, please refer to [Proscript python library](https://github.com/alpoktem/proscript).
 

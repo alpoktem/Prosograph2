@@ -1,0 +1,8 @@
+word|speaker_id|id|start_time|end_time|duration|pause_before|pause_after|pos|punctuation_before|punctuation_after|f0_mean_hz|i0_mean_db|f0_mean|i0_mean
+para|Peter|heroes_s3_2_spa_aligned.segment1.word1|0.0|0.16|0.16|0.0|0.0|NA|||100.0|64.0|-9.9831|1.1046
+impedir|Peter|heroes_s3_2_spa_aligned.segment1.word2|0.16|0.57|0.41|0.0|0.0|NA|||79.0|66.0|-14.064|1.6373
+que|Peter|heroes_s3_2_spa_aligned.segment1.word3|0.57|0.63|0.06|0.0|0.0|NA|||0.0|62.0|0.0|0.5549
+nathan|Peter|heroes_s3_2_spa_aligned.segment1.word4|0.63|1.01|0.38|0.0|0.0|NA|||65.0|67.0|-17.4409|1.8976
+hable|Peter|heroes_s3_2_spa_aligned.segment1.word5|1.01|1.18|0.17|0.0|0.0|NA|||101.0|67.0|-9.8108|1.8976
+de|Peter|heroes_s3_2_spa_aligned.segment1.word6|1.18|1.29|0.11|0.0|0.0|NA|||0.0|63.0|0.0|0.8319
+nosotros|Peter|heroes_s3_2_spa_aligned.segment1.word7|1.29|1.8|0.51|0.0|2.24|NA||.|44.0|63.0|-24.1961|0.8319

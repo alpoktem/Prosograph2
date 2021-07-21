@@ -1,0 +1,4 @@
+word|speaker_id|id|start_time|end_time|duration|pause_before|pause_after|pos|punctuation_before|punctuation_after|f0_mean_hz|i0_mean_db|f0_mean|i0_mean
+hay|Matt|heroes_s3_2_spa_aligned.segment2.word1|0.0|0.15|0.15|2.24|0.0|NA|¿||632.0|61.0|19.137|-0.0307
+alguien|Matt|heroes_s3_2_spa_aligned.segment2.word2|0.15|0.66|0.51|0.0|0.0|NA|||350.0|69.0|8.9062|2.1028
+aquí|Matt|heroes_s3_2_spa_aligned.segment2.word3|0.66|0.78|0.12|0.0|1.29|NA||?|325.0|65.0|7.6232|1.0689

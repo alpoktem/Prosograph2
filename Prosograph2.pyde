@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 import csv
 from collections import defaultdict
 import codecs
@@ -7,14 +8,14 @@ import json
 import os
 import random
 from proscript import Proscript, Segment, Word
-import dataconfig_ted as dataconfig   #Specify here which dataconfig you want to use
+import dataconfig_heroes as dataconfig  #Specify here which dataconfig you want to use
 
 add_library('minim')
 
 randomColorVals = [0, 20, 50, 75, 100, 125, 150, 175, 200, 225, 250]
 numRandomColorVals = 11
 
-def get_file_list(data_source, extension='.csv'):
+def get_file_list(data_source, extension='.0.csv'):
     if not os.path.isdir(data_source):
         files = [data_source]
     else:
@@ -23,17 +24,20 @@ def get_file_list(data_source, extension='.csv'):
         files = [os.path.join(data_source, fn) for fn in files if fn.endswith(extension)]
     return files
 
-def load_dataset():
-    global dataset
+def load_dataset(dataset1_dir, dataset2_dir):
+    global dataset1
+    global dataset2
     global dataset_id
     global no_of_samples
     if dataset_id == '-1':
-        dataset = get_file_list(dataconfig.DATASET)
-        no_of_samples = len(dataset)
+        dataset1 = get_file_list(dataset1_dir, '.csv')
+        dataset2 = get_file_list(dataset2_dir, '.csv')
+        no_of_samples = len(dataset1)
         print("Displaying dataset. (Size: " + str(no_of_samples) + ")")
     elif dataset_id in dataconfig.dataset_tags.keys():
-        dataset = get_file_list(dataconfig.DATASET, '.' + dataset_id + '.csv')
-        no_of_samples = len(dataset)
+        dataset1 = get_file_list(dataset1_dir, '.' + dataset_id + '.csv')
+        dataset2 = get_file_list(dataset2_dir, '.' + dataset_id + '.csv')
+        no_of_samples = len(dataset1)
         print("Displaying dataset " + dataset_id + ": " + dataconfig.dataset_tags[dataset_id] + " (Size: " + str(no_of_samples) + ")")
     else:
         print("No dataset exists with that index")
@@ -55,10 +59,7 @@ def setup():
     else:
         dataset_id = '-1'
     
-    load_dataset()
-
-    global draw_from_word_no  #in the case of unsampled continous data
-    draw_from_word_no = 0
+    load_dataset(dataconfig.DATASET_ENG, dataconfig.DATASET_SPA)
     
     global draw_from_sample_no
     draw_from_sample_no = 0
@@ -69,6 +70,10 @@ def setup():
     
     global font_label
     font_label = createFont(config.FONT_TYPE, config.LABEL_FEATURE_TEXT_SIZE, True)
+    textAlign(LEFT)
+    
+    global font_sampleid
+    font_sampleid = createFont(config.FONT_TYPE, config.SAMPLEID_FEATURE_TEXT_SIZE, True)
     textAlign(LEFT)
     
     global drawn_words
@@ -139,10 +144,17 @@ def fitFeatureValueToBoxRange(value, boxSize, maxFeatureVal=None):
         maxFeatureVal = dataconfig.maxFeatureVal
     return int(value/maxFeatureVal * boxSize)
 
-def drawSample(sample, start_drawing_from, no_of_words, draw_from_Y=0):
+#function to get the sample id number at the end of complete proscript id
+#assumes id in format: heroes_s2_1_spa_aligned_spa0080 
+def get_numberatend(fullid):
+    return fullid.split('_')[-1][-4:]
+
+def drawSample(sample, start_drawing_from, no_of_words, force_line_count, draw_from_Y=0, draw_from_X=0):
+    print("force line: %i"%force_line_count)
+    
     global select_range
     strokeWeight(0.5)
-    brushX = 0
+    brushX = 5 + draw_from_X
     brushY = draw_from_Y
     break_free = False
     wordBoundingBoxHeight = config.TEXT_SIZE + 4
@@ -156,18 +168,28 @@ def drawSample(sample, start_drawing_from, no_of_words, draw_from_Y=0):
         feature_line_skip = label_line_skip + 1 + wordBoundingBoxHeight 
     new_line_skip = feature_line_skip + wordBoundingBoxHeight + 1
     
+    #write sample label
+    fill(0,0,0,255)
+    textFont(font_sampleid)
+    idno = get_numberatend(sample.id)
+    text(idno, brushX, brushY + wordBoundingBoxHeight)
+    brushX += int(textWidth(idno)) + 5
+    
+    line_count = 1
     for index in range(start_drawing_from, no_of_words):
-        word = sample.get_word_by_index(index).word
+        
+        word = unicode(sample.get_word_by_index(index).word, 'utf-8')
         if dataconfig.draw_pause_boxes:
             pause_duration = sample.get_word_by_index(index).pause_before
         else:
             pause_duration = 0
-        #get punctuation coming before the current word and after previous word
+            
+        #get punctuation coming before the current word and after previous word. they're concatenated in same space.
         punctuation = ''
         if dataconfig.draw_punctuation:
             if index-1 in range(start_drawing_from, no_of_words):
-                punctuation += sample.get_word_by_index(index-1).punctuation_after
-            punctuation += sample.get_word_by_index(index).punctuation_before
+                punctuation += unicode(sample.get_word_by_index(index-1).punctuation_after, "utf-8") 
+            punctuation += unicode(sample.get_word_by_index(index).punctuation_before, "utf-8")
 
         #calculate word width, see if it fits in current line
         textFont(font)
@@ -175,10 +197,21 @@ def drawSample(sample, start_drawing_from, no_of_words, draw_from_Y=0):
             wordGraphicWidth = int(sample.get_word_by_index(index).duration * textWidth(word))
         else:
             wordGraphicWidth = int(textWidth(word)) 
+        
         #see if still on the screen horizontally, if not skip to next line
-        if brushX + wordGraphicWidth >= config.WINDOW_WIDTH - config.RIGHT_AXIS_LENGTH:
-            brushX = 0
-            brushY += new_line_skip
+        if brushX + wordGraphicWidth >= draw_from_X + config.WINDOW_WIDTH / 2 - config.RIGHT_AXIS_LENGTH:
+            line_count += 1
+            if force_line_count == -1:
+                print("here")
+                brushX = draw_from_X
+                brushY += new_line_skip
+            elif not line_count > force_line_count:
+                brushX = draw_from_X
+                brushY += new_line_skip
+            else:
+                print("not skipping line to align well")
+            
+        
         #see if new can line fit on the screen vertically, if not stop drawing new words
         if not brushY + wordBoundingBoxHeight * 3 <= config.WINDOW_HEIGHT - config.LEGEND_HEIGHT:
             break_free = True
@@ -233,7 +266,7 @@ def drawSample(sample, start_drawing_from, no_of_words, draw_from_Y=0):
         sample.get_word_by_index(index).word_box_topleft = (wordBoxStartX, brushY)
         sample.get_word_by_index(index).word_box_bottomright = (wordBoxStartX + wordBoxWidth, brushY + wordBoxHeight)
         
-        #draw percentage features 
+        #draw percentage features
         for percentage_feature_name in dataconfig.percentage_feature_keys:
             if percentage_features_drawOrNot_dict[percentage_feature_name]:
                 for mark_at_percentage in sample[percentage_feature_name][index]:
@@ -281,7 +314,7 @@ def drawSample(sample, start_drawing_from, no_of_words, draw_from_Y=0):
                     line_features_colors_dict[line_feature_name][1],
                     line_features_colors_dict[line_feature_name][2])
                 value = sample.get_word_by_index(index).get_value(line_feature_name)
-                rangedValue = fitFeatureValueToBoxRange(value, wordBoundingBoxHeight, config.MAX_SEMITONE)
+                rangedValue = fitFeatureValueToBoxRange(value, wordBoundingBoxHeight)
                 line(wordBoxStartX, brushY - rangedValue, wordBoxEndX, brushY - rangedValue)
     
         #draw curve features
@@ -315,7 +348,7 @@ def drawSample(sample, start_drawing_from, no_of_words, draw_from_Y=0):
                     value = contour[contour_index]
                     binX = round((wordBoxEndX - wordBoxStartX) * x_percentage / len(contour))
                     pointLocX = wordBoxStartX + binX
-                    rangedValue = fitFeatureValueToBoxRange(value, wordBoundingBoxHeight, config.MAX_SEMITONE)
+                    rangedValue = fitFeatureValueToBoxRange(value, wordBoundingBoxHeight)
                     if contour_index > 0:
                         line(prev_LocX, brushY - prev_rangedValue, pointLocX, brushY - rangedValue)
                     prev_LocX = pointLocX
@@ -331,16 +364,26 @@ def drawSample(sample, start_drawing_from, no_of_words, draw_from_Y=0):
                 point_features_colors_dict[point_feature_name][1],
                 point_features_colors_dict[point_feature_name][2])
             value = sample.get_word_by_index(index).get_value(point_feature_name)
-            rangedValue = fitFeatureValueToBoxRange(value, wordBoundingBoxHeight, config.MAX_SEMITONE)
+            rangedValue = fitFeatureValueToBoxRange(value, wordBoundingBoxHeight)
             pointLocX = wordBoxStartX + (wordBoxEndX - wordBoxStartX)/2
             ellipse(pointLocX, brushY - rangedValue, config.POINT_VALUE_MARKER_SIZE, config.POINT_VALUE_MARKER_SIZE)    
         brushY -= feature_line_skip + word_line_skip #back to word line
+        
+    #add an extra line if needed to align with parallel
+    if force_line_count and line_count < force_line_count:
+        brushX = draw_from_X
+        brushY += new_line_skip
+        print("Adding an empty line to align")
+    
+    
+    #draw punctutation after the last word
+    #...
     
     if not break_free:
         draw_from_Y = brushY + new_line_skip
-        return draw_from_Y
+        return draw_from_Y, line_count
     else:
-        return -1
+        return -1, line_count
 
 def drawLegend():    
     legendY = config.WINDOW_HEIGHT - config.LEGEND_HEIGHT
@@ -401,32 +444,50 @@ def drawFeatureLegend(feature_keys, drawOrNot_dict, colors_dict, brushX, brushY,
         brushX += config.LEGEND_TEXT_SIZE * 2
     return brushX
 
-def drawSampleset(start_drawing_from_sample, start_drawing_from_word):
+def drawSampleset(dataset, start_drawing_from_sample, force_line_counts, X_offset = 0):
     Y_offset=0
-    global drawn_words
-    drawn_words = []
-    
+    no_samples_drawn = 0
+    line_counts = []
     for sample_no in range(start_drawing_from_sample, no_of_samples):
+        if force_line_counts > 0 and sample_no - start_drawing_from_sample >= len(force_line_counts):
+            break
+        
         sample_file = dataset[sample_no]
-        print('reading %s'%sample_file)
+        
         sample_proscript = Proscript()
         sample_proscript.from_file(sample_file, search_audio=True)
+        #sample_proscript.add_end_token()
         #print('audio file', sample_proscript.audio_file)
         #print(sample_proscript.id)
         
-        global no_of_words
         no_of_words = sample_proscript.get_no_of_words()
-        Y_offset = drawSample(sample_proscript, start_drawing_from_word, no_of_words, Y_offset)
+        
+        
+        if force_line_counts:
+            force_line_count = force_line_counts[no_samples_drawn]
+            
+        else:
+            force_line_count = -1
+        
+        Y_offset, line_count = drawSample(sample_proscript, 0, no_of_words, force_line_count, Y_offset, X_offset)
+        line_counts.append(line_count)
+        print("%i: %i"%(sample_no, line_count))
         if Y_offset == -1:
             break
+        no_samples_drawn += 1
+    return no_samples_drawn, line_counts
     
 def draw():
     background(255)
     global draw_from_sample_no
-    global draw_from_word_no
+    global drawn_words
+    global no_drawn_samples
+    drawn_words = []
     
-    drawSampleset(draw_from_sample_no, draw_from_word_no)
-
+    no_drawn_samples, line_counts = drawSampleset(dataset1, draw_from_sample_no, None)
+    print(line_counts)
+    _, line_counts_2 = drawSampleset(dataset2, draw_from_sample_no, line_counts, config.WINDOW_WIDTH / 2)
+        
     noLoop()
     drawLegend()
 
@@ -456,7 +517,8 @@ def mousePressed():
         select_range = -1
 
     if not select_range == -1:
-        print("Selected %s: %s - %s"%(drawn_words[select_range[0]].segment_ref.proscript_ref.id, drawn_words[select_range[0]].word, drawn_words[select_range[1]].word))
+        print("Selected %s"%(drawn_words[select_range[0]].segment_ref.proscript_ref.id))
+        #print("Selected %s: %s - %s"%(drawn_words[select_range[0]].segment_ref.proscript_ref.id, drawn_words[select_range[0]].word, drawn_words[select_range[1]].word))
         audio_file = drawn_words[select_range[0]].segment_ref.proscript_ref.audio_file
         print("Audio: %s"%audio_file)
         if audio_file:
@@ -469,31 +531,20 @@ def mousePressed():
     loop()
     
 def keyPressed():
-    global draw_from_word_no
-    global no_of_words
     global draw_from_sample_no
     global no_of_samples
+    global no_drawn_samples
     if key == 'N' or key == 'n':  #next page
-        if draw_from_sample_no + config.NUM_SAMPLES_TO_SKIP_ON_PAGE_TURN < no_of_samples:
-            draw_from_sample_no += config.NUM_SAMPLES_TO_SKIP_ON_PAGE_TURN
-            global select_range
-            select_range = -1
-            loop()
-        elif draw_from_word_no + config.NUM_WORDS_TO_SKIP_ON_PAGE_TURN < no_of_words: 
-            draw_from_word_no += config.NUM_WORDS_TO_SKIP_ON_PAGE_TURN
+        if draw_from_sample_no + no_drawn_samples < no_of_samples:
+            draw_from_sample_no += no_drawn_samples
             global select_range
             select_range = -1
             loop()
         else:
             print("end of data")
-    if key == 'B' or key == 'b':   #orevious page
-        if draw_from_sample_no - config.NUM_SAMPLES_TO_SKIP_ON_PAGE_TURN >= 0:
-            draw_from_sample_no -= config.NUM_SAMPLES_TO_SKIP_ON_PAGE_TURN
-            global select_range
-            select_range = -1
-            loop()
-        elif draw_from_word_no - config.NUM_WORDS_TO_SKIP_ON_PAGE_TURN >= 0:
-            draw_from_word_no -= config.NUM_WORDS_TO_SKIP_ON_PAGE_TURN
+    if key == 'B' or key == 'b':   #previous page
+        if draw_from_sample_no - no_drawn_samples >= 0:
+            draw_from_sample_no -= no_drawn_samples
             global select_range
             select_range = -1
             loop()
@@ -515,8 +566,8 @@ def keyPressed():
         print("exiting")
         exit()
     if key == 'S' or key == 's':
-        saveFrame("%s/batchfrom-%i.png"%(config.DIR_SAVED_FRAMES, draw_from_word_no))
-        print("Saved frame to %s/batchfrom-%i.png"%(config.DIR_SAVED_FRAMES, draw_from_word_no))
+        saveFrame("%s/batchfrom-%i.png"%(config.DIR_SAVED_FRAMES, draw_from_sample_no))
+        print("Saved frame to %s/batchfrom-%i.png"%(config.DIR_SAVED_FRAMES, draw_from_sample_no))
     if key == 'C' or key == 'c':
         initializeColors()
         loop()
