@@ -2,7 +2,7 @@
 
 Prosograph2 is an extension on [Prosograph](https://github.com/alpoktem/Prosograph) for viewing bilingual speech corpora. Aligned samples are displayed side by side to accommodate e.g. prosodic comparison. The tool also reads prosodically annotated speech data from Proscript format files.
 
-<p align="center"><img src="https://raw.githubusercontent.com/alpoktem/Prosograph/master/img/prosograph2_dump.png"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/alpoktem/Prosograph2/master/img/prosograph2_dump.png"></p>
 
 ## Run
 
